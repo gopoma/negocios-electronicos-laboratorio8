@@ -1,13 +1,43 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { LineasDeProduccionModule } from './lineas-de-produccion/lineas-de-produccion.module';
-import { PlantasDeProduccionModule } from './plantas-de-produccion/plantas-de-produccion.module';
-import { MaestrosDeMaquinariasModule } from './maestros-de-maquinarias/maestros-de-maquinarias.module';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { EnvConfiguration } from './config/env.config';
+import { JoiValidationSchema } from './config/joi.validation';
+
+import { CommonModule } from './common/common.module';
+import { LineaDeProduccionModule } from './linea-de-produccion/linea-de-produccion.module';
+import { PlantaDeProduccionModule } from './planta-de-produccion/planta-de-produccion.module';
+import { MaestroDeMaquinariasModule } from './maestro-de-maquinarias/maestro-de-maquinarias.module';
 
 @Module({
-  imports: [LineasDeProduccionModule, PlantasDeProduccionModule, MaestrosDeMaquinariasModule],
-  controllers: [AppController],
-  providers: [AppService],
+    imports: [
+        ConfigModule.forRoot({
+            load: [EnvConfiguration],
+            validationSchema: JoiValidationSchema,
+        }),
+
+        TypeOrmModule.forRoot({
+            type: 'postgres',
+            host: process.env.DB_HOST,
+            port: +process.env.DB_PORT,
+            database: process.env.DB_NAME,
+            username: process.env.DB_USERNAME,
+            password: process.env.DB_PASSWORD,
+            autoLoadEntities: true,
+            synchronize: true,
+            ssl: { rejectUnauthorized: false }
+        }),
+
+        CommonModule,
+
+        LineaDeProduccionModule,
+
+        PlantaDeProduccionModule,
+
+        MaestroDeMaquinariasModule,
+    ],
+    controllers: [],
+    providers: [],
 })
-export class AppModule {}
+export class AppModule { }
